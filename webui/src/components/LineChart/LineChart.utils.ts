@@ -79,85 +79,92 @@ export const createOptions = <ChartType extends Pick<ICharts, 'time'>>({
   splitAxis,
   yAxisLabels,
   scatterplot,
-}: ILineChart<ChartType>) => ({
-  title: {
-    text: title,
-    left: 'center',
-    top: 0,
-    padding: [10, 0, 10, 0]
-  },
-  tooltip: {
-    trigger: 'axis',
-    formatter: (params?: ILineChartTooltipFormatterParams[] | null) => {
-      if (Array.isArray(params) && params.length > 0 && params.some(param => !!param.value)) {
-        return params.reduce(
-          (tooltipText, { axisValue, color, seriesName, value }, index) =>
-            `
-            ${index === 0 ? formatLocaleString(axisValue) : ''}
-            ${tooltipText}
-            <br>
-            <span style="color:${color};">
-              ${seriesName}:&nbsp${renderChartTooltipValue<ChartType>({
-                chartValueFormatter,
-                value,
-              })}
-            </span>
-          `,
-          '',
-        );
-      } else {
-        return 'No data';
-      }
+}: ILineChart<ChartType>) => {
+  // 安全地获取时间数据
+  const timeData = charts?.time || [];
+  const defaultTime = new Date().toISOString();
+  const startTime = timeData.length > 0 ? timeData[0] : defaultTime;
+
+  return {
+    title: {
+      text: title,
+      left: 'center',
+      top: 0,
+      padding: [10, 0, 10, 0]
     },
-    borderWidth: 0,
-  },
-  legend: {
-    type: 'scroll',
-    orient: 'horizontal',
-    top: 25
-  },
-  xAxis: {
-    type: 'time',
-    min: (charts.time || [new Date().toISOString()])[0],
-    startValue: (charts.time || [])[0],
-    axisLabel: {
-      formatter: formatTimeAxis,
-      hideOverlap: true
-    },
-  },
-  grid: {
-    left: '10%',
-    right: '5%',
-    top: 60,
-    bottom: '10%',
-    containLabel: true
-  },
-  yAxis: createYAxis({ splitAxis, yAxisLabels }),
-  series: getSeriesData<ChartType>({ charts, lines, scatterplot }),
-  color: colors,
-  toolbox: {
-    right: 10,
-    top: 0,
-    feature: {
-      dataZoom: {
-        title: {
-          zoom: 'Zoom Select',
-          back: 'Zoom Reset',
-        },
-        yAxisIndex: false,
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params?: ILineChartTooltipFormatterParams[] | null) => {
+        if (Array.isArray(params) && params.length > 0 && params.some(param => !!param.value)) {
+          return params.reduce(
+            (tooltipText, { axisValue, color, seriesName, value }, index) =>
+              `
+              ${index === 0 ? formatLocaleString(axisValue) : ''}
+              ${tooltipText}
+              <br>
+              <span style="color:${color};">
+                ${seriesName}:&nbsp${renderChartTooltipValue<ChartType>({
+                  chartValueFormatter,
+                  value,
+                })}
+              </span>
+            `,
+            '',
+          );
+        } else {
+          return 'No data';
+        }
       },
-      saveAsImage: {
-        name: title.replace(/\s+/g, '_').toLowerCase() + '_' + new Date().getTime() / 1000,
-        title: 'Download as PNG',
-        emphasis: {
-          iconStyle: {
-            textPosition: 'left',
+      borderWidth: 0,
+    },
+    legend: {
+      type: 'scroll',
+      orient: 'horizontal',
+      top: 25
+    },
+    xAxis: {
+      type: 'time',
+      min: startTime,
+      startValue: startTime,
+      axisLabel: {
+        formatter: formatTimeAxis,
+        hideOverlap: true
+      },
+    },
+    grid: {
+      left: '10%',
+      right: '5%',
+      top: 60,
+      bottom: '10%',
+      containLabel: true
+    },
+    yAxis: createYAxis({ splitAxis, yAxisLabels }),
+    series: getSeriesData<ChartType>({ charts, lines, scatterplot }),
+    color: colors,
+    toolbox: {
+      right: 10,
+      top: 0,
+      feature: {
+        dataZoom: {
+          title: {
+            zoom: 'Zoom Select',
+            back: 'Zoom Reset',
+          },
+          yAxisIndex: false,
+        },
+        saveAsImage: {
+          name: title.replace(/\s+/g, '_').toLowerCase() + '_' + new Date().getTime() / 1000,
+          title: 'Download as PNG',
+          emphasis: {
+            iconStyle: {
+              textPosition: 'left',
+            },
           },
         },
       },
     },
-  },
-});
+  };
+};
 
 export const createMarkLine = <ChartType extends Pick<ICharts, 'markers'>>(charts: ChartType) => ({
   symbol: 'none',

@@ -44,6 +44,10 @@ export default function LineChart<ChartType extends IBaseChartType>({
       return;
     }
 
+    if (!charts || typeof charts !== 'object') {
+      return;
+    }
+
     const initChart = init(chartContainer.current);
 
     initChart.setOption(
@@ -75,7 +79,11 @@ export default function LineChart<ChartType extends IBaseChartType>({
   }, [chartContainer]);
 
   useEffect(() => {
-    const isChartDataDefined = lines.every(({ key }) => !!charts[key]);
+    if (!charts || !lines || !Array.isArray(lines) || lines.length === 0) {
+      return;
+    }
+    
+    const isChartDataDefined = lines.every(({ key }) => charts[key] !== undefined);
     if (chart && isChartDataDefined) {
       chart.setOption({
         series: lines.map(({ key, yAxisIndex, ...echartsOptions }, index) => ({

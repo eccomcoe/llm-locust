@@ -50,11 +50,17 @@ const percentileNullValues = swarmTemplateArgs.percentilesToChart?.reduce(
 );
 
 const addSpaceToChartsBetweenTests = (charts: ICharts, customMetrics: Record<string, number>) => {
-  const getNullifiedCustomMetrics = () =>
-    Object.fromEntries(Object.entries(customMetrics).map(([key]) => [
-      key,
-      { value: null }
-    ]))
+  const getNullifiedCustomMetrics = () => {
+    if (!customMetrics || typeof customMetrics !== 'object') {
+      return {};
+    }
+    
+    return Object.fromEntries(
+      Object.entries(customMetrics)
+        .filter(([, value]) => typeof value === 'number')
+        .map(([key]) => [key, { value: null }])
+    );
+  };
 
   return updateArraysAtProps(charts, {
     ...percentileNullValues,
@@ -66,8 +72,6 @@ const addSpaceToChartsBetweenTests = (charts: ICharts, customMetrics: Record<str
     time: '',
   });
 };
-
-
 
 const uiSlice = createSlice({
   name: 'ui',

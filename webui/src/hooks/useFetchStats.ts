@@ -31,18 +31,18 @@ export default function useFetchStats() {
 
     try {
       const {
-        currentResponseTimePercentiles,
+        currentResponseTimePercentiles = {},
         extendedStats,
         stats,
         errors,
-        totalRps,
-        customMetrics,
+        totalRps = 0,
+        customMetrics = {},
         charts,
-        totalFailPerSec,
-        failRatio,
+        totalFailPerSec = 0,
+        failRatio = 0,
         workers,
-        userCount,
-        totalAvgResponseTime,
+        userCount = 0,
+        totalAvgResponseTime = 0,
       } = statsData;
 
       const time = new Date().toISOString();
@@ -55,19 +55,32 @@ export default function useFetchStats() {
       const totalRpsRounded = roundToDecimalPlaces(totalRps, 2);
       const totalFailPerSecRounded = roundToDecimalPlaces(totalFailPerSec, 2);
       const totalFailureRatioRounded = roundToDecimalPlaces(failRatio * 100);
-      const getRoundedCustomMetrics = () =>
-        Object.fromEntries(Object.entries(customMetrics).map(([key, val]) => [
-          key,
-          [time, roundToDecimalPlaces(val, 2)]
-        ]))
+      
+      // 安全地处理自定义指标
+      const getRoundedCustomMetrics = () => {
+        if (!customMetrics || typeof customMetrics !== 'object') {
+          return {};
+        }
+        return Object.fromEntries(
+          Object.entries(customMetrics)
+            .filter(([, val]) => typeof val === 'number')
+            .map(([key, val]) => [
+              key,
+              [time, roundToDecimalPlaces(val, 2)]
+            ])
+        );
+      };
 
-      const percentilesWithTime = Object.entries(currentResponseTimePercentiles).reduce(
-        (percentiles, [key, value]) => ({
-          ...percentiles,
-          [key]: [time, value || 0],
-        }),
-        {},
-      );
+      // 安全地处理响应时间百分位数
+      const percentilesWithTime = currentResponseTimePercentiles && typeof currentResponseTimePercentiles === 'object'
+        ? Object.entries(currentResponseTimePercentiles).reduce(
+            (percentiles, [key, value]) => ({
+              ...percentiles,
+              [key]: [time, typeof value === 'number' ? value : 0],
+            }),
+            {},
+          )
+        : {};
 
       const newChartEntry = {
         ...percentilesWithTime,
@@ -78,6 +91,7 @@ export default function useFetchStats() {
         ...getRoundedCustomMetrics(),
         time,
       };
+      
       setUi({
         extendedStats,
         stats,
