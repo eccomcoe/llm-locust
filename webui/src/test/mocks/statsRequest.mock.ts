@@ -151,6 +151,7 @@ export const statsResponseTransformed = {
     'responseTimePercentile0.5': [[mockDate.toISOString(), 2]],
     'responseTimePercentile0.95': [[mockDate.toISOString(), 2]],
     currentRps: [[mockDate.toISOString(), 1932.5]],
+    currentTps: [[mockDate.toISOString(), 1932.5]],
     currentFailPerSec: [[mockDate.toISOString(), 1932.5]],
     userCount: [[mockDate.toISOString(), 1]],
     totalAvgResponseTime: [[mockDate.toISOString(), 0.41]],
