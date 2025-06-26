@@ -94,7 +94,18 @@ class OpenAIChatStreamingClient(BaseModelClient):
                         if line == "[DONE]":
                             continue
                         try:
-                            text = json.loads(line)["choices"][0]["delta"]["content"]
+                            json_data = json.loads(line)
+                            delta = json_data["choices"][0]["delta"]
+                            
+                            # 处理深度思考模式：优先使用 reasoning_content，如果没有则使用 content
+                            if "reasoning_content" in delta:
+                                text = delta["reasoning_content"]
+                            elif "content" in delta:
+                                text = delta["content"]
+                            else:
+                                # 如果既没有 reasoning_content 也没有 content，跳过这一行
+                                continue
+                                
                             output += self.tokenizer.encode(
                                 text, add_special_tokens=False
                             )

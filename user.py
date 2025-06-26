@@ -49,6 +49,7 @@ class User:
                         url,
                         headers=headers,
                         json=data,
+                        ssl=False,
                     ) as response:
                         if response.status != 200:
                             # Request is unsuccessful. collect and continue
